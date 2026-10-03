@@ -1,3 +1,0 @@
-ArduinoJson
-DHT sensor library
-ESP32Servo
