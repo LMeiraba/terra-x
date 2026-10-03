@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "author": "Antigravity",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "ultrasonic", "top": -150, "left": 150, "attrs": {} },
+    { "type": "wokwi-servo", "id": "radar_servo", "top": -50, "left": 200, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": 100, "left": 200, "attrs": {} },
+    { "type": "wokwi-led", "id": "led_left_fwd", "top": 200, "left": -100, "attrs": { "color": "green", "label": "L_FWD (Pin 25)" } },
+    { "type": "wokwi-led", "id": "led_right_fwd", "top": 200, "left": 100, "attrs": { "color": "blue", "label": "R_FWD (Pin 26)" } },
+    { "type": "wokwi-potentiometer", "id": "pot_battery", "top": 50, "left": -150, "attrs": { "label": "Simulate Battery 7.4V" } }
+  ],
+  "connections": [
+    [ "esp:5V", "ultrasonic:VCC", "red", [] ],
+    [ "esp:GND", "ultrasonic:GND", "black", [] ],
+    [ "esp:5", "ultrasonic:TRIG", "blue", [] ],
+    [ "esp:18", "ultrasonic:ECHO", "purple", [] ],
+
+    [ "esp:5V", "radar_servo:V+", "red", [] ],
+    [ "esp:GND", "radar_servo:GND", "black", [] ],
+    [ "esp:19", "radar_servo:PWM", "orange", [] ],
+
+    [ "esp:3V3", "dht1:VCC", "red", [] ],
+    [ "esp:GND", "dht1:GND", "black", [] ],
+    [ "esp:4", "dht1:SDA", "green", [] ],
+
+    [ "esp:25", "led_left_fwd:A", "green", [] ],
+    [ "esp:GND", "led_left_fwd:C", "black", [] ],
+    [ "esp:26", "led_right_fwd:A", "blue", [] ],
+    [ "esp:GND", "led_right_fwd:C", "black", [] ],
+
+    [ "esp:3V3", "pot_battery:VCC", "red", [] ],
+    [ "esp:GND", "pot_battery:GND", "black", [] ],
+    [ "esp:34", "pot_battery:SIG", "yellow", [] ]
+  ]
+}
