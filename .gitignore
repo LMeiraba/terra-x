@@ -23,6 +23,11 @@ temp.zip
 # ESP32 / PlatformIO / Arduino
 .pio/
 .vscode/
+
+# Temp Markdown Plans
+PLAN.md
+HARDWARE.md
+Hardware_Modularity_Plan.md
 *.bin
 *.elf
 build/

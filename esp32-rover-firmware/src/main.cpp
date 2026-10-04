@@ -12,9 +12,25 @@
 WebSocketsServer webSocket = WebSocketsServer(81);
 Preferences preferences;
 float imuYaw = 0; // Mocked until MPU6050 is integrated
+bool mockDataEnabled = false; // Global toggle for hardware mock mode
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-  if (type == WStype_TEXT) {
+  if (type == WStype_CONNECTED) {
+    Serial.printf("[%u] Dashboard Connected!\n", num);
+    
+    preferences.begin("terra-x", true);
+    String savedSSID = preferences.getString("ssid", "");
+    preferences.end();
+    
+    StaticJsonDocument<128> doc;
+    doc["cmd"] = "CONFIG";
+    doc["ssid"] = savedSSID;
+    doc["mockEnabled"] = mockDataEnabled;
+    
+    char buffer[128];
+    serializeJson(doc, buffer);
+    webSocket.sendTXT(num, buffer);
+  } else if (type == WStype_TEXT) {
     StaticJsonDocument<256> doc;
     DeserializationError error = deserializeJson(doc, payload);
     if (!error) {
@@ -41,8 +57,10 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         delay(500);
         ESP.restart();
       } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "SET_MOCK") == 0) {
-        // Implement mock data toggle later if needed!
-        Serial.println("Mock hardware data enabled!");
+        mockDataEnabled = doc["enabled"];
+        Serial.print("Mock hardware data ");
+        Serial.println(mockDataEnabled ? "enabled!" : "disabled!");
+        webSocket.broadcastTXT("{\"cmd\":\"log\",\"msg\":\"[ACK] Hardware mock mode updated.\",\"level\":\"system\"}");
       }
     }
   }

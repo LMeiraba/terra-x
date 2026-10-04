@@ -250,6 +250,7 @@ export default function App() {
   const [connState, setConnState] = useState(CONN.OFF);
   const [inputIp, setInputIp] = useState("terra-brain.local");
   const [connectedIp, setConnectedIp] = useState("");
+  const [roverConfig, setRoverConfig] = useState({ ssid: "", mockEnabled: false });
 
   // Data
   const [sensors, setSensors] = useState(defaultSensors());
@@ -325,6 +326,15 @@ export default function App() {
 
   // ── Process incoming sensor data ──────────────────────────────────────
   const processSensorData = useCallback((d) => {
+    // Intercept system commands
+    if (d.cmd === "CONFIG") {
+      setRoverConfig({ ssid: d.ssid || "", mockEnabled: d.mockEnabled || false });
+      return;
+    } else if (d.cmd === "log") {
+      addLog(d.msg, d.level || "system");
+      return;
+    }
+
     setSensors(prev => {
       const next = { ...prev, ...d };
       sensorsRef.current = next;
@@ -1146,7 +1156,7 @@ export default function App() {
                   Update the primary network credentials on the rover's non-volatile storage. Requires active connection.
                 </p>
                 <div style={{display: "flex", gap: 12}}>
-                  <input id="wifi-ssid" className="input-sm" placeholder="SSID" style={{flex: 1}} disabled={connState !== CONN.ON} />
+                  <input id="wifi-ssid" className="input-sm" defaultValue={roverConfig.ssid} placeholder="SSID" style={{flex: 1}} disabled={connState !== CONN.ON} />
                   <input id="wifi-pass" type="password" className="input-sm" placeholder="Password" style={{flex: 1}} disabled={connState !== CONN.ON} />
                   <button className="btn-sm" disabled={connState !== CONN.ON} onClick={() => {
                     const ssid = document.getElementById("wifi-ssid").value;
@@ -1181,10 +1191,17 @@ export default function App() {
                     sendCmd({ cmd: "RESTART" });
                     addLog("Restart command issued.", "system");
                   }}>Restart Rover Core</button>
-                  <button className="btn-sm" disabled={connState !== CONN.ON} onClick={() => {
-                    sendCmd({ cmd: "SET_MOCK", enabled: true });
-                    addLog("Hardware mock data enabled.", "system");
-                  }}>Enable Mock Hardware</button>
+                  <button 
+                    className={`btn-sm ${roverConfig.mockEnabled ? "btn-sm--on" : ""}`} 
+                    disabled={connState !== CONN.ON} 
+                    onClick={() => {
+                      const newState = !roverConfig.mockEnabled;
+                      sendCmd({ cmd: "SET_MOCK", enabled: newState });
+                      addLog(`Hardware mock data ${newState ? "enabled" : "disabled"}.`, "system");
+                    }}
+                  >
+                    {roverConfig.mockEnabled ? "Mock Hardware: ON" : "Mock Hardware: OFF"}
+                  </button>
                 </div>
               </div>
             </div>
