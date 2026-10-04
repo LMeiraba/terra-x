@@ -1141,29 +1141,50 @@ export default function App() {
             <div style={{padding: 20, display: "flex", flexDirection: "column", gap: 24}}>
               
               <div style={{background: "var(--bg-card)", padding: 16, borderRadius: 6, border: "1px solid var(--border)"}}>
-                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>📡 Rover WiFi Configuration</h3>
+                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>Rover Network Configuration</h3>
                 <p style={{fontSize: 12, color: "var(--dim)", marginBottom: 16}}>
-                  Save your home WiFi credentials directly to the rover's physical memory. The rover will reboot and attempt to connect to it. If it fails, it will fall back to its standalone Field Mode AP.
+                  Update the primary network credentials on the rover's non-volatile storage. Requires active connection.
                 </p>
                 <div style={{display: "flex", gap: 12}}>
-                  <input id="wifi-ssid" className="input-sm" placeholder="Home WiFi Name (SSID)" style={{flex: 1}} />
-                  <input id="wifi-pass" type="password" className="input-sm" placeholder="Password" style={{flex: 1}} />
-                  <button className="btn-sm" onClick={() => {
+                  <input id="wifi-ssid" className="input-sm" placeholder="SSID" style={{flex: 1}} disabled={connState !== CONN.ON} />
+                  <input id="wifi-pass" type="password" className="input-sm" placeholder="Password" style={{flex: 1}} disabled={connState !== CONN.ON} />
+                  <button className="btn-sm" disabled={connState !== CONN.ON} onClick={() => {
                     const ssid = document.getElementById("wifi-ssid").value;
                     const pass = document.getElementById("wifi-pass").value;
                     if (ssid) {
                       sendCmd({ cmd: "SET_WIFI", ssid, pass });
-                      addLog(`Sent new WiFi credentials (${ssid}) to Rover. Expect reboot...`, "system");
+                      addLog(`Provisioning network: ${ssid}. Waiting for ACK...`, "system");
                     }
-                  }}>💾 Save & Reboot</button>
+                  }}>Save & Reboot</button>
                 </div>
               </div>
 
               <div style={{background: "var(--bg-card)", padding: 16, borderRadius: 6, border: "1px solid var(--border)"}}>
-                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>⚙️ Power & Diagnostic</h3>
+                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>Camera Configuration</h3>
+                <p style={{fontSize: 12, color: "var(--dim)", marginBottom: 16}}>
+                  Set the target endpoint for the MJPEG video stream.
+                </p>
                 <div style={{display: "flex", gap: 12}}>
-                  <button className="btn-sm" onClick={() => sendCmd({ cmd: "RESTART" })}>🔄 Restart Rover Brain</button>
-                  <button className="btn-sm" onClick={() => sendCmd({ cmd: "SET_MOCK", enabled: true })}>🧪 Enable Hardware Mock Data</button>
+                  <input 
+                    className="input-sm" 
+                    value={camUrl}
+                    onChange={(e) => setCamUrl(e.target.value)}
+                    style={{flex: 1}} 
+                  />
+                </div>
+              </div>
+
+              <div style={{background: "var(--bg-card)", padding: 16, borderRadius: 6, border: "1px solid var(--border)"}}>
+                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>Power & Diagnostics</h3>
+                <div style={{display: "flex", gap: 12}}>
+                  <button className="btn-sm" disabled={connState !== CONN.ON} onClick={() => {
+                    sendCmd({ cmd: "RESTART" });
+                    addLog("Restart command issued.", "system");
+                  }}>Restart Rover Core</button>
+                  <button className="btn-sm" disabled={connState !== CONN.ON} onClick={() => {
+                    sendCmd({ cmd: "SET_MOCK", enabled: true });
+                    addLog("Hardware mock data enabled.", "system");
+                  }}>Enable Mock Hardware</button>
                 </div>
               </div>
             </div>
