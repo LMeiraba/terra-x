@@ -802,6 +802,20 @@ export default function App() {
       <div className="panel-hdr">
         <span>LIVE CAMERA {simMode && <span className="sim-tag">SIM</span>}</span>
         <div className="hdr-actions">
+          <button 
+            className="btn-sm" 
+            onClick={() => {
+              const ssid = prompt("Enter new Home WiFi SSID (or leave blank to stay in Field Mode):");
+              if (ssid === null) return;
+              const pass = prompt("Enter Home WiFi Password:");
+              if (pass !== null) {
+                sendCmd({ cmd: "SET_WIFI", ssid, pass });
+                addLog(`Sent new WiFi credentials (${ssid}) to Rover. Rebooting...`, "system");
+              }
+            }}
+          >
+            ⚙️ Setup WiFi
+          </button>
           <button className={`btn-sm ${ledOn ? "btn-sm--on" : ""}`} onClick={toggleLed}>
             💡 LED
           </button>

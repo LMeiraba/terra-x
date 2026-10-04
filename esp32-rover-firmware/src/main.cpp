@@ -2,17 +2,20 @@
 #include <WiFi.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
+#include <Preferences.h>
+#include <ESPmDNS.h>
 
 #include "Config.h"
 #include "Radar.h"
 #include "Motors.h"
 
 WebSocketsServer webSocket = WebSocketsServer(81);
+Preferences preferences;
 float imuYaw = 0; // Mocked until MPU6050 is integrated
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   if (type == WStype_TEXT) {
-    StaticJsonDocument<200> doc;
+    StaticJsonDocument<256> doc;
     DeserializationError error = deserializeJson(doc, payload);
     if (!error) {
       if (doc.containsKey("cmd") && strcmp(doc["cmd"], "DRIVE") == 0) {
@@ -21,6 +24,17 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         setMotors(L, R);
       } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "STOP") == 0) {
         setMotors(0, 0);
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "SET_WIFI") == 0) {
+        // Save new WiFi credentials from the Dashboard to persistent memory
+        preferences.begin("terra-x", false);
+        preferences.putString("ssid", doc["ssid"].as<String>());
+        preferences.putString("pass", doc["pass"].as<String>());
+        preferences.end();
+        
+        Serial.println("New WiFi Credentials Saved! Rebooting...");
+        webSocket.broadcastTXT("{\"status\": \"WIFI_SAVED_REBOOTING\"}");
+        delay(1000);
+        ESP.restart();
       }
     }
   }
@@ -33,26 +47,36 @@ void setup() {
   initMotors();
   initRadar();
 
+  // Load Saved WiFi Credentials from Non-Volatile Memory
+  preferences.begin("terra-x", true);
+  String savedSSID = preferences.getString("ssid", "");
+  String savedPass = preferences.getString("pass", "");
+  preferences.end();
+
   // Smart WiFi Auto-Fallback Logic
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.begin(HOME_SSID, HOME_PASS);
-  Serial.print("Connecting to Home WiFi...");
-  
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED && attempts < 20) { // 10 second timeout
-    delay(500);
-    Serial.print(".");
-    attempts++;
+  if (savedSSID.length() > 0) {
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.begin(savedSSID.c_str(), savedPass.c_str());
+    Serial.print("Connecting to Saved Home WiFi: ");
+    Serial.println(savedSSID);
+    
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) { // 10 second timeout
+      delay(500);
+      Serial.print(".");
+      attempts++;
+    }
   }
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("\n[HOME MODE] Connected to Home WiFi!");
     Serial.print("IP: "); Serial.println(WiFi.localIP());
   } else {
-    Serial.println("\n[FIELD MODE] Home WiFi not found. Falling back to Standalone Rover AP.");
+    Serial.println("\n[FIELD MODE] Home WiFi not found or not set. Starting Standalone Rover AP.");
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ROVER_AP_SSID, ROVER_AP_PASS);
-    Serial.print("AP Started! IP: "); Serial.println(WiFi.softAPIP());
+    Serial.print("AP Started! Connect to TERRA-X-ROVER. IP: "); 
+    Serial.println(WiFi.softAPIP());
   }
 
   // Start mDNS so the dashboard can always find it at terra-brain.local
