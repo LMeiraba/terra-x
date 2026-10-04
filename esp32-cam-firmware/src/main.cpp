@@ -1,12 +1,16 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include "esp_http_server.h"
 
 // ==========================================
-// WIFI CREDENTIALS (Connects to Rover's AP)
+// WIFI CREDENTIALS (Auto-Fallback)
 // ==========================================
-const char* ssid = "TERRA-X-ROVER";
-const char* password = "password"; // Match this with your main ESP32 AP password
+const char* home_ssid = "YOUR_HOME_WIFI";
+const char* home_password = "YOUR_HOME_PASSWORD";
+
+const char* rover_ssid = "TERRA-X-ROVER";
+const char* rover_password = "password";
 
 // ==========================================
 // CAMERA PIN CONFIG (AI-Thinker ESP32-CAM)
@@ -141,23 +145,47 @@ void setup() {
         return;
     }
 
-    // Connect to WiFi (The Main ESP32 Rover board is the AP)
-    // We force a static IP of 192.168.4.2 so the dashboard always finds it
-    IPAddress local_IP(192, 168, 4, 2);
-    IPAddress gateway(192, 168, 4, 1);
-    IPAddress subnet(255, 255, 255, 0);
+    // Smart WiFi Auto-Fallback Logic
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(home_ssid, home_password);
+    Serial.print("Connecting to Home WiFi...");
     
-    WiFi.config(local_IP, gateway, subnet);
-    WiFi.begin(ssid, password);
-
-    Serial.println("Connecting to Rover WiFi...");
-    while (WiFi.status() != WL_CONNECTED) {
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) { // 10 second timeout
         delay(500);
         Serial.print(".");
+        attempts++;
     }
-    
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\n[HOME MODE] Connected to Home WiFi!");
+        Serial.print("IP: "); Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("\n[FIELD MODE] Home WiFi not found. Connecting to Standalone Rover AP...");
+        
+        // When connecting to the Rover AP, force static IP so it's always fast
+        IPAddress local_IP(192, 168, 4, 2);
+        IPAddress gateway(192, 168, 4, 1);
+        IPAddress subnet(255, 255, 255, 0);
+        WiFi.config(local_IP, gateway, subnet);
+        
+        WiFi.begin(rover_ssid, rover_password);
+        while (WiFi.status() != WL_CONNECTED) {
+            delay(500);
+            Serial.print(".");
+        }
+        Serial.println("\nConnected to Rover AP!");
+    }
+
+    // Start mDNS so the dashboard can always find it at terra-cam.local
+    if (!MDNS.begin("terra-cam")) {
+        Serial.println("Error setting up MDNS!");
+    } else {
+        Serial.println("mDNS responder started: terra-cam.local");
+    }
+
     Serial.println("");
-    Serial.print("Camera Ready! Stream at: http://");
+    Serial.print("Camera Ready! Stream at: http://terra-cam.local:81/stream or http://");
     Serial.print(WiFi.localIP());
     Serial.println(":81/stream");
 

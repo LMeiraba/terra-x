@@ -26,14 +26,41 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   }
 }
 
+#include <ESPmDNS.h>
+
 void setup() {
   Serial.begin(115200);
   initMotors();
   initRadar();
 
-  WiFi.softAP(WIFI_SSID, WIFI_PASS);
-  Serial.print("Rover SoftAP Started! IP: ");
-  Serial.println(WiFi.softAPIP());
+  // Smart WiFi Auto-Fallback Logic
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.begin(HOME_SSID, HOME_PASS);
+  Serial.print("Connecting to Home WiFi...");
+  
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) { // 10 second timeout
+    delay(500);
+    Serial.print(".");
+    attempts++;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\n[HOME MODE] Connected to Home WiFi!");
+    Serial.print("IP: "); Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("\n[FIELD MODE] Home WiFi not found. Falling back to Standalone Rover AP.");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ROVER_AP_SSID, ROVER_AP_PASS);
+    Serial.print("AP Started! IP: "); Serial.println(WiFi.softAPIP());
+  }
+
+  // Start mDNS so the dashboard can always find it at terra-brain.local
+  if (!MDNS.begin("terra-brain")) {
+    Serial.println("Error setting up MDNS responder!");
+  } else {
+    Serial.println("mDNS responder started: terra-brain.local");
+  }
 
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);

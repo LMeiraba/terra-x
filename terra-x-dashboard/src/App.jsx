@@ -270,7 +270,7 @@ export default function App() {
 
   // Camera
   const [camMode, setCamMode] = useState("ip"); // Default to IP Cam instead of Local
-  const [camUrl, setCamUrl] = useState("http://192.168.4.2:81/stream");
+  const [camUrl, setCamUrl] = useState("http://terra-cam.local:81/stream");
   const [camError, setCamError] = useState(null);
   const [ledOn, setLedOn] = useState(false);
   const [camPan, setCamPan] = useState(90); // Servo angle 0-180 (90 is center)

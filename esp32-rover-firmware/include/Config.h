@@ -1,10 +1,13 @@
 #pragma once
 
 // ==========================================
-// WIFI CREDENTIALS (SoftAP / Router)
+// WIFI CREDENTIALS (Auto-Fallback)
 // ==========================================
-#define WIFI_SSID "TERRA-X-ROVER"
-#define WIFI_PASS "password"
+#define HOME_SSID "YOUR_HOME_WIFI"
+#define HOME_PASS "YOUR_HOME_PASSWORD"
+
+#define ROVER_AP_SSID "TERRA-X-ROVER"
+#define ROVER_AP_PASS "password"
 
 // ==========================================
 // PINOUT DEFINITIONS
