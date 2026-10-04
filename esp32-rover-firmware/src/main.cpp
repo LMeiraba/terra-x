@@ -35,6 +35,13 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         webSocket.broadcastTXT("{\"status\": \"WIFI_SAVED_REBOOTING\"}");
         delay(1000);
         ESP.restart();
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "RESTART") == 0) {
+        Serial.println("Reboot command received from dashboard!");
+        delay(500);
+        ESP.restart();
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "SET_MOCK") == 0) {
+        // Implement mock data toggle later if needed!
+        Serial.println("Mock hardware data enabled!");
       }
     }
   }

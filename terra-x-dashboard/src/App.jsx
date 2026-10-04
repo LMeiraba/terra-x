@@ -802,20 +802,6 @@ export default function App() {
       <div className="panel-hdr">
         <span>LIVE CAMERA {simMode && <span className="sim-tag">SIM</span>}</span>
         <div className="hdr-actions">
-          <button 
-            className="btn-sm" 
-            onClick={() => {
-              const ssid = prompt("Enter new Home WiFi SSID (or leave blank to stay in Field Mode):");
-              if (ssid === null) return;
-              const pass = prompt("Enter Home WiFi Password:");
-              if (pass !== null) {
-                sendCmd({ cmd: "SET_WIFI", ssid, pass });
-                addLog(`Sent new WiFi credentials (${ssid}) to Rover. Rebooting...`, "system");
-              }
-            }}
-          >
-            ⚙️ Setup WiFi
-          </button>
           <button className={`btn-sm ${ledOn ? "btn-sm--on" : ""}`} onClick={toggleLed}>
             💡 LED
           </button>
@@ -929,7 +915,7 @@ export default function App() {
 
       {/* ══ TABS ═════════════════════════════════════════════════════════ */}
       <nav className="tabbar">
-        {[["dashboard","Dashboard"],["camera","Camera"],["sensors","Sensors"],["map","Map"],["missions","Missions"]].map(([id, label]) => (
+        {[["dashboard","Dashboard"],["camera","Camera"],["sensors","Sensors"],["map","Map"],["missions","Missions"],["settings","Settings"]].map(([id, label]) => (
           <button key={id} className={`tab ${tab === id ? "tab--on" : ""}`} onClick={() => setTab(id)}>
             {label}{id === "missions" && savedMissions.length > 0 && <span className="badge">{savedMissions.length}</span>}
           </button>
@@ -1145,6 +1131,42 @@ export default function App() {
                   ))}
                 </div>
             }
+          </div>
+        )}
+
+        {/* ── SETTINGS TAB ────────────────────────────────────────────── */}
+        {tab === "settings" && (
+          <div className="panel" style={{flex:1, overflow:"auto"}}>
+            <div className="panel-hdr">SYSTEM SETTINGS</div>
+            <div style={{padding: 20, display: "flex", flexDirection: "column", gap: 24}}>
+              
+              <div style={{background: "var(--bg-card)", padding: 16, borderRadius: 6, border: "1px solid var(--border)"}}>
+                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>📡 Rover WiFi Configuration</h3>
+                <p style={{fontSize: 12, color: "var(--dim)", marginBottom: 16}}>
+                  Save your home WiFi credentials directly to the rover's physical memory. The rover will reboot and attempt to connect to it. If it fails, it will fall back to its standalone Field Mode AP.
+                </p>
+                <div style={{display: "flex", gap: 12}}>
+                  <input id="wifi-ssid" className="input-sm" placeholder="Home WiFi Name (SSID)" style={{flex: 1}} />
+                  <input id="wifi-pass" type="password" className="input-sm" placeholder="Password" style={{flex: 1}} />
+                  <button className="btn-sm" onClick={() => {
+                    const ssid = document.getElementById("wifi-ssid").value;
+                    const pass = document.getElementById("wifi-pass").value;
+                    if (ssid) {
+                      sendCmd({ cmd: "SET_WIFI", ssid, pass });
+                      addLog(`Sent new WiFi credentials (${ssid}) to Rover. Expect reboot...`, "system");
+                    }
+                  }}>💾 Save & Reboot</button>
+                </div>
+              </div>
+
+              <div style={{background: "var(--bg-card)", padding: 16, borderRadius: 6, border: "1px solid var(--border)"}}>
+                <h3 style={{fontSize: 14, color: "var(--acc)", marginBottom: 12}}>⚙️ Power & Diagnostic</h3>
+                <div style={{display: "flex", gap: 12}}>
+                  <button className="btn-sm" onClick={() => sendCmd({ cmd: "RESTART" })}>🔄 Restart Rover Brain</button>
+                  <button className="btn-sm" onClick={() => sendCmd({ cmd: "SET_MOCK", enabled: true })}>🧪 Enable Hardware Mock Data</button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
