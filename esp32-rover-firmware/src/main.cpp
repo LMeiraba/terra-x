@@ -32,11 +32,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         preferences.end();
         
         Serial.println("New WiFi Credentials Saved! Rebooting...");
-        webSocket.broadcastTXT("{\"status\": \"WIFI_SAVED_REBOOTING\"}");
+        webSocket.broadcastTXT("{\"cmd\":\"log\",\"msg\":\"[ACK] WiFi Credentials successfully saved to NVS. Rebooting now!\",\"level\":\"system\"}");
         delay(1000);
         ESP.restart();
       } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "RESTART") == 0) {
         Serial.println("Reboot command received from dashboard!");
+        webSocket.broadcastTXT("{\"cmd\":\"log\",\"msg\":\"[ACK] Reboot command acknowledged. Restarting...\",\"level\":\"system\"}");
         delay(500);
         ESP.restart();
       } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "SET_MOCK") == 0) {
