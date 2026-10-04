@@ -269,7 +269,7 @@ export default function App() {
   const [savedMissions, setSavedMissions] = useState([]);
 
   // Camera
-  const [camMode, setCamMode] = useState("local");
+  const [camMode, setCamMode] = useState("ip"); // Default to IP Cam instead of Local
   const [camUrl, setCamUrl] = useState("http://192.168.4.2:81/stream");
   const [camError, setCamError] = useState(null);
   const [ledOn, setLedOn] = useState(false);
@@ -455,6 +455,7 @@ export default function App() {
     return () => {
       clearInterval(iv);
       if (!wsRef.current) { setConnState(CONN.OFF); setConnectedIp(""); setSensors(defaultSensors()); }
+      setCamMode("ip"); // Force back to IP cam when sim stops
       addLog("[SIM] Simulation stopped", "sim");
     };
   }, [simMode, processSensorData, addLog]);
