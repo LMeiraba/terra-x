@@ -912,7 +912,7 @@ export default function App() {
             ? <button className="btn-rec" onClick={startRecording} disabled={!isOn && !simMode}>⏺ Record</button>
             : <button className="btn-rec btn-rec--on" onClick={stopRecording}>⏹ Stop · Save</button>
           }
-          <button className="btn-estop" onPointerDown={() => sendCmd("ESTOP")}>⛔ STOP</button>
+          <button className="btn-estop" disabled={!isOn && !simMode} onPointerDown={() => sendCmd("ESTOP")}>⛔ STOP</button>
         </div>
       </header>
 
@@ -1098,7 +1098,6 @@ export default function App() {
                   <option value="pipeline">Pipeline Theme</option>
                   <option value="cave">Cave Theme</option>
                 </select>
-                <span style={{ fontSize:10, color:"var(--muted)", borderLeft: "1px solid var(--border)", paddingLeft: 12 }}>IMU · Ultrasonic · Terrain</span>
                 <button className="btn-sm" onClick={() => { setPath3D([[0,0,0]]); setObstacles3D([]); }}>Reset</button>
               </div>
             </div>
