@@ -20,7 +20,20 @@ void initMotors() {
   ledcAttachPin(MOTOR_RIGHT_A, PWM_CHAN_RA);
   ledcAttachPin(MOTOR_RIGHT_B, PWM_CHAN_RB);
   
+  pinMode(CONE_MOTOR_PIN, OUTPUT);
+  pinMode(HEADLIGHT_PIN, OUTPUT);
+  digitalWrite(CONE_MOTOR_PIN, LOW);
+  digitalWrite(HEADLIGHT_PIN, LOW);
+
   setMotors(0, 0);
+}
+
+void setCone(bool state) {
+  digitalWrite(CONE_MOTOR_PIN, state ? HIGH : LOW);
+}
+
+void setHeadlights(bool state) {
+  digitalWrite(HEADLIGHT_PIN, state ? HIGH : LOW);
 }
 
 void setMotors(int leftSpeed, int rightSpeed) {

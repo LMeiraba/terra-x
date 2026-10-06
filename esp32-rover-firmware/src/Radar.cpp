@@ -3,6 +3,7 @@
 #include <ESP32Servo.h>
 
 Servo radarServo;
+Servo cameraServo;
 int sweepAngle = 0;
 int sweepDir = 1;
 long lastSweepTime = 0;
@@ -12,6 +13,13 @@ void initRadar() {
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   radarServo.attach(SERVO_PIN);
+  cameraServo.attach(CAMERA_PAN_PIN);
+  cameraServo.write(90); // Start facing forward
+}
+
+void setCameraPan(int angle) {
+  angle = constrain(angle, 0, 180);
+  cameraServo.write(angle);
 }
 
 long getUltrasonicDistance() {

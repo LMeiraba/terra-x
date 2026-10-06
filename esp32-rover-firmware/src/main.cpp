@@ -62,6 +62,12 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         Serial.print("Mock hardware data ");
         Serial.println(mockDataEnabled ? "enabled!" : "disabled!");
         webSocket.broadcastTXT("{\"cmd\":\"log\",\"msg\":\"[ACK] Hardware mock mode updated.\",\"level\":\"system\"}");
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "CONE") == 0) {
+        setCone(doc["enabled"]);
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "LIGHTS") == 0) {
+        setHeadlights(doc["enabled"]);
+      } else if (doc.containsKey("cmd") && strcmp(doc["cmd"], "CAMPAN") == 0) {
+        setCameraPan(doc["angle"]);
       }
     }
   }
