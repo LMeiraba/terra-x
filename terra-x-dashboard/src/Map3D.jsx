@@ -56,49 +56,64 @@ function Rover({ position, rotation, theme = "basic" }) {
 
   return (
     <group ref={groupRef}>
-      {/* Main Body - Cyberpunk / Sci-fi style */}
+      {/* Main Body - Base Chassis */}
       <mesh position={[0, 0.05, 0]}>
-        <boxGeometry args={[0.26, 0.12, 0.44]} />
+        <boxGeometry args={[0.26, 0.12, 0.38]} />
         <meshStandardMaterial color={bodyColor} metalness={0.8} roughness={0.2} />
       </mesh>
       
-      {/* Top Equipment Deck */}
+      {/* Top Deck (ESP32 Brain & ESP32-CAM) */}
       <mesh position={[0, 0.12, -0.05]}>
-        <boxGeometry args={[0.2, 0.04, 0.25]} />
+        <boxGeometry args={[0.18, 0.03, 0.25]} />
         <meshStandardMaterial color="#222" metalness={0.9} roughness={0.5} />
       </mesh>
+      
+      {/* Camera Pan Mount */}
+      <mesh position={[0, 0.16, 0.05]}>
+        <boxGeometry args={[0.06, 0.06, 0.06]} />
+        <meshStandardMaterial color="#111" />
+      </mesh>
 
-      {/* 6 Wheels for better off-road look */}
+      {/* 4 Wheels (TT Motors) */}
       {[
-        [-0.16, -0.02, 0.16], [0.16, -0.02, 0.16],
-        [-0.16, -0.02, 0.0],  [0.16, -0.02, 0.0],
-        [-0.16, -0.02, -0.16],[0.16, -0.02, -0.16]
+        [-0.16, -0.02, 0.14], [0.16, -0.02, 0.14], // Front
+        [-0.16, -0.02, -0.14],[0.16, -0.02, -0.14] // Rear
       ].map((pos, i) => (
         <mesh key={i} position={pos} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.08, 0.08, 0.06, 16]} />
+          <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
           <meshStandardMaterial color="#111" roughness={0.9} />
-          {/* Hubcaps */}
-          <mesh position={[0, pos[0] > 0 ? 0.031 : -0.031, 0]}>
-             <cylinderGeometry args={[0.04, 0.04, 0.01, 8]} />
-             <meshStandardMaterial color={accentColor} emissive={accentColor} emissiveIntensity={0.5} />
+          {/* Yellow Motor Hubcaps */}
+          <mesh position={[0, pos[0] > 0 ? -0.026 : 0.026, 0]}>
+             <cylinderGeometry args={[0.03, 0.03, 0.01, 8]} />
+             <meshStandardMaterial color="#ffd700" />
           </mesh>
         </mesh>
       ))}
 
-      {/* Sensor Eye / Headlight */}
-      <mesh position={[0, 0.08, 0.22]} rotation={[Math.PI/2, 0, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
-        <meshStandardMaterial color={accentColor} emissive={accentColor} emissiveIntensity={2} />
+      {/* Rotating Inspection Cone (Front Payload) */}
+      <mesh position={[0, 0.0, 0.26]} rotation={[Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.08, 0.18, 16]} />
+        <meshStandardMaterial color="#aaaaaa" metalness={0.9} roughness={0.3} />
+      </mesh>
+
+      {/* LED Headlights */}
+      <mesh position={[-0.08, 0.08, 0.19]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[0.02, 0.02, 0.01, 16]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
+      </mesh>
+      <mesh position={[0.08, 0.08, 0.19]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[0.02, 0.02, 0.01, 16]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
       </mesh>
       
-      {/* Antenna */}
-      <mesh position={[-0.08, 0.2, -0.15]}>
-        <cylinderGeometry args={[0.005, 0.005, 0.2, 8]} />
-        <meshStandardMaterial color="#555" />
+      {/* Ultrasonic Sensor (Eyes on top of camera) */}
+      <mesh position={[-0.03, 0.21, 0.05]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[0.015, 0.015, 0.01, 16]} />
+        <meshStandardMaterial color={accentColor} />
       </mesh>
-      <mesh position={[-0.08, 0.3, -0.15]}>
-        <sphereGeometry args={[0.015, 8, 8]} />
-        <meshStandardMaterial color={accentColor} emissive={accentColor} emissiveIntensity={2} />
+      <mesh position={[0.03, 0.21, 0.05]} rotation={[Math.PI/2, 0, 0]}>
+        <cylinderGeometry args={[0.015, 0.015, 0.01, 16]} />
+        <meshStandardMaterial color={accentColor} />
       </mesh>
       
       {theme === "cave" && (
