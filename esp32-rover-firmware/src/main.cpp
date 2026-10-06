@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "Radar.h"
 #include "Motors.h"
+#include "IMU.h"
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 Preferences preferences;
@@ -72,6 +73,7 @@ void setup() {
   Serial.begin(115200);
   initMotors();
   initRadar();
+  initIMU();
 
   // Load Saved WiFi Credentials from Non-Volatile Memory
   preferences.begin("terra-x", true);
@@ -118,25 +120,40 @@ void setup() {
 
 void loop() {
   webSocket.loop();
-  updateRadar();
+  
+  if (!mockDataEnabled) {
+      updateRadar();
+      updateIMU();
+  }
 
   static long lastBroadcast = 0;
   if (millis() - lastBroadcast > 30) {
     lastBroadcast = millis();
     
     StaticJsonDocument<256> doc;
-    doc["sweepAngle"] = getSweepAngle();
-    doc["sweepDistance"] = getSweepDistance();
     
-    // Simulate IMU drifting forward for 3D mapping test
-    imuYaw += 0.5;
-    if (imuYaw >= 360) imuYaw = 0;
-    doc["imuYaw"] = imuYaw;
-    doc["imuPitch"] = 0;
-    doc["batteryVoltage"] = 7.4;
+    if (mockDataEnabled) {
+        // --- FAKE DATA MODE ---
+        doc["sweepAngle"] = getSweepAngle(); // Mock sweeps it
+        doc["sweepDistance"] = getSweepDistance();
+        
+        imuYaw += 0.5;
+        if (imuYaw >= 360) imuYaw = 0;
+        doc["imuYaw"] = imuYaw;
+        doc["imuPitch"] = 0;
+        doc["imuRoll"] = 0;
+    } else {
+        // --- REAL HARDWARE MODE ---
+        doc["sweepAngle"] = getSweepAngle();
+        doc["sweepDistance"] = getSweepDistance();
+        doc["imuYaw"] = getYaw();
+        doc["imuPitch"] = getPitch();
+        doc["imuRoll"] = getRoll();
+    }
+    
+    doc["batteryVoltage"] = 7.4; // Still mocked for now
     
     char buffer[256];
     serializeJson(doc, buffer);
     webSocket.broadcastTXT(buffer);
   }
-}

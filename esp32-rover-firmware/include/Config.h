@@ -22,3 +22,12 @@
 #define MOTOR_LEFT_B 26
 #define MOTOR_RIGHT_A 27
 #define MOTOR_RIGHT_B 14
+
+// I2C Bus (MPU6050 & Payloads)
+#define I2C_SDA 21
+#define I2C_SCL 22
+
+// Actuators & Payloads
+#define CAMERA_PAN_PIN 13
+#define CONE_MOTOR_PIN 12
+#define HEADLIGHT_PIN 4
