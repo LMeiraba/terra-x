@@ -783,15 +783,25 @@ export default function App() {
     const newState = !ledOn;
     setLedOn(newState);
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ cmd: "LED", state: newState ? 1 : 0 }));
+      wsRef.current.send(JSON.stringify({ cmd: "LIGHTS", enabled: newState }));
     }
     addLog(`💡 Headlight turned ${newState ? 'ON' : 'OFF'}`, 'ok');
+  };
+
+  const [coneOn, setConeOn] = useState(false);
+  const toggleCone = () => {
+    const newState = !coneOn;
+    setConeOn(newState);
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ cmd: "CONE", enabled: newState }));
+    }
+    addLog(`⚙️ Rotating Cone ${newState ? 'ON' : 'OFF'}`, 'ok');
   };
 
   const handleCamPan = (val) => {
     setCamPan(val);
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ cmd: "CAM_PAN", angle: val }));
+      wsRef.current.send(JSON.stringify({ cmd: "CAMPAN", angle: val }));
     }
   };
 
@@ -812,6 +822,9 @@ export default function App() {
       <div className="panel-hdr">
         <span>LIVE CAMERA {simMode && <span className="sim-tag">SIM</span>}</span>
         <div className="hdr-actions">
+          <button className={`btn-sm ${coneOn ? "btn-sm--on" : ""}`} onClick={toggleCone} style={{ color: coneOn ? "#00ff88" : "var(--fg)" }}>
+            ⚙️ CONE DRILL
+          </button>
           <button className={`btn-sm ${ledOn ? "btn-sm--on" : ""}`} onClick={toggleLed}>
             💡 LED
           </button>
